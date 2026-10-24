@@ -1,16 +1,13 @@
-"""
-Graph Algorithms Implementation for Canteen Management System.
-Contains pure Python custom implementations for Problems G1 through G10.
-"""
+
 
 from typing import Dict, List, Optional, Set, Tuple
 from dsa.graph import Graph, Edge, Vertex, VertexType, EdgeWeightMeaning
 from dsa.supporting_dsa import FIFOQueue, PriorityQueue
 
 
-# ==========================================
+
 # G1: BREADTH-FIRST SEARCH (Unweighted Shortest Path)
-# ==========================================
+
 def bfs_shortest_path(graph: Graph, source: str, destination: str) -> Tuple[float, List[str], List[Dict]]:
     """
     Finds the minimum number of counter movements (edges) from source to destination using BFS.
@@ -53,7 +50,6 @@ def bfs_shortest_path(graph: Graph, source: str, destination: str) -> Tuple[floa
     if destination not in parent:
         return float('inf'), [], trace
 
-    # Reconstruct path
     path = []
     curr = destination
     while curr is not None:
@@ -64,9 +60,8 @@ def bfs_shortest_path(graph: Graph, source: str, destination: str) -> Tuple[floa
     return distance[destination], path, trace
 
 
-# ==========================================
 # G2: DIJKSTRA'S SHORTEST PATH (Weighted Minimum Time)
-# ==========================================
+
 def dijkstra_shortest_path(graph: Graph, source: str, destination: str) -> Tuple[float, List[str], List[Dict]]:
     """
     Finds the route with minimum total walking/waiting time using Dijkstra's Algorithm with MinHeap.
@@ -133,9 +128,8 @@ def dijkstra_shortest_path(graph: Graph, source: str, destination: str) -> Tuple
     return distances[destination], path, trace
 
 
-# ==========================================
+
 # G3: DFS REACHABILITY CHECK
-# ==========================================
 def dfs_reachability(graph: Graph, source: str, required_counters: List[str]) -> Tuple[bool, List[str], List[str]]:
     """
     Checks whether all required food counters are reachable from the starting source (e.g. Billing).
@@ -161,9 +155,9 @@ def dfs_reachability(graph: Graph, source: str, required_counters: List[str]) ->
     return len(unreachable) == 0, reachable, unreachable
 
 
-# ==========================================
+
 # G4: CONNECTED COMPONENTS (Detect Disconnected Sections)
-# ==========================================
+
 def find_connected_components(graph: Graph) -> Tuple[int, List[List[str]]]:
     """
     Finds the number of independent connected sections in the canteen graph.
@@ -194,9 +188,7 @@ def find_connected_components(graph: Graph) -> Tuple[int, List[List[str]]]:
     return len(components), components
 
 
-# ==========================================
 # G5: TOPOLOGICAL SORTING (Workflow Dependencies)
-# ==========================================
 def topological_sort(workflow_graph: Graph) -> Tuple[bool, List[str], str]:
     """
     Computes a valid execution sequence for order workflow dependencies using Kahn's Algorithm.
@@ -229,9 +221,8 @@ def topological_sort(workflow_graph: Graph) -> Tuple[bool, List[str], str]:
         return False, [], "Workflow contains a circular dependency cycle! Topological ordering impossible."
 
     return True, topo_order, "Valid topological workflow sequence generated successfully."
-# ==========================================
+
 # G6: CYCLE DETECTION IN DIRECTED GRAPH
-# ==========================================
 def detect_cycle_directed(directed_graph: Graph) -> Tuple[bool, List[str]]:
     """
     Detects circular workflow dependencies using DFS recursion stack.
@@ -254,7 +245,6 @@ def detect_cycle_directed(directed_graph: Graph) -> Tuple[bool, List[str]]:
                 if dfs(v):
                     return True
             elif v in rec_stack:
-                # Cycle found! Extract cycle path
                 cycle_start_idx = path_stack.index(v)
                 cycle_nodes.extend(path_stack[cycle_start_idx:] + [v])
                 return True
@@ -271,9 +261,7 @@ def detect_cycle_directed(directed_graph: Graph) -> Tuple[bool, List[str]]:
     return False, []
 
 
-# ==========================================
 # G7: MINIMUM SPANNING TREE (Kruskal's & Prim's Algorithms)
-# ==========================================
 class UnionFind:
     """Disjoint Set Union (DSU) for Kruskal's MST algorithm."""
     def __init__(self, vertices: List[str]):
@@ -302,11 +290,6 @@ class UnionFind:
 
 
 def kruskal_mst(graph: Graph) -> Tuple[float, List[Edge]]:
-    """
-    Computes the Minimum Spanning Tree for canteen network/cabling using Kruskal's Algorithm.
-    Time Complexity: O(E log E)
-    Returns: (total_min_cost, mst_edges)
-    """
     all_edges = graph.get_all_edges()
     sorted_edges = sorted(all_edges, key=lambda e: e.weight)
 
@@ -323,11 +306,7 @@ def kruskal_mst(graph: Graph) -> Tuple[float, List[Edge]]:
 
 
 def prim_mst(graph: Graph, start_vertex: str = "BILLING") -> Tuple[float, List[Edge]]:
-    """
-    Computes the Minimum Spanning Tree using Prim's Algorithm with Priority Queue.
-    Time Complexity: O(E log V)
-    Returns: (total_min_cost, mst_edges)
-    """
+
     if start_vertex not in graph.vertices:
         return 0.0, []
 
@@ -358,10 +337,7 @@ def prim_mst(graph: Graph, start_vertex: str = "BILLING") -> Tuple[float, List[E
 
     return total_cost, mst_edges
 
-
-# ==========================================
 # G8: PARALLEL FOOD PREPARATION DEPENDENCY SIMULATION
-# ==========================================
 def simulate_parallel_kitchen_tasks(order_id: str, items_by_counter: Dict[str, List[str]]) -> Dict:
     """
     Models multi-item order preparation as a DAG where independent counters (Chicken, Biryani, Puffs, Drinks)
@@ -372,7 +348,6 @@ def simulate_parallel_kitchen_tasks(order_id: str, items_by_counter: Dict[str, L
     dep_graph.add_vertex("ORDER_MGMT", f"Order #{order_id} Received", VertexType.BILLING)
     dep_graph.add_vertex("COLLECTION", "Collection Counter Join", VertexType.COLLECTION)
 
-    # Counter preparation time estimates
     prep_times = {
         "CHICKEN": 8.0,
         "BIRYANI": 10.0,
@@ -398,7 +373,6 @@ def simulate_parallel_kitchen_tasks(order_id: str, items_by_counter: Dict[str, L
             "prep_time_mins": c_time
         })
 
-    # Parallel bottleneck is the max prep time among all active counters
     max_prep_time = max([b["prep_time_mins"] for b in parallel_branches]) if parallel_branches else 0.0
     sequential_time = sum([b["prep_time_mins"] for b in parallel_branches])
 
@@ -413,9 +387,7 @@ def simulate_parallel_kitchen_tasks(order_id: str, items_by_counter: Dict[str, L
 
 
 
-# ==========================================
 # G9: MAX-FLOW / MIN-CUT (Edmonds-Karp)
-# ==========================================
 def edmonds_karp_max_flow(flow_graph: Graph, source: str, sink: str) -> Dict:
     """
     Computes the maximum student throughput (students/min) from source to sink using
@@ -429,7 +401,7 @@ def edmonds_karp_max_flow(flow_graph: Graph, source: str, sink: str) -> Dict:
         return {"max_flow": 0.0, "edge_flows": [], "min_cut_edges": [],
                 "source_side": [], "augmenting_paths": []}
 
-    # Residual capacity matrix as nested hash maps (reverse edges start at 0)
+
     residual: Dict[str, Dict[str, float]] = {v: {} for v in flow_graph.vertices}
     original: Dict[Tuple[str, str], float] = {}
     for u in flow_graph.vertices:
@@ -442,7 +414,6 @@ def edmonds_karp_max_flow(flow_graph: Graph, source: str, sink: str) -> Dict:
     augmenting_paths: List[Dict] = []
 
     while True:
-        # BFS for the shortest augmenting path in the residual graph
         parent: Dict[str, Optional[str]] = {source: None}
         queue = FIFOQueue[str]()
         queue.enqueue(source)
@@ -456,7 +427,6 @@ def edmonds_karp_max_flow(flow_graph: Graph, source: str, sink: str) -> Dict:
         if sink not in parent:
             break
 
-        # Find bottleneck capacity along the path
         path = []
         v = sink
         bottleneck = float('inf')
@@ -468,7 +438,6 @@ def edmonds_karp_max_flow(flow_graph: Graph, source: str, sink: str) -> Dict:
         path.append(source)
         path.reverse()
 
-        # Augment: reduce forward residual, increase backward residual
         for i in range(len(path) - 1):
             u, v = path[i], path[i + 1]
             residual[u][v] -= bottleneck
@@ -477,7 +446,6 @@ def edmonds_karp_max_flow(flow_graph: Graph, source: str, sink: str) -> Dict:
         max_flow += bottleneck
         augmenting_paths.append({"path": path, "bottleneck": bottleneck, "total_flow": max_flow})
 
-    # Min-Cut: vertices still reachable from source in the final residual graph
     reachable: Set[str] = {source}
     queue = FIFOQueue[str]()
     queue.enqueue(source)
@@ -501,9 +469,8 @@ def edmonds_karp_max_flow(flow_graph: Graph, source: str, sink: str) -> Dict:
     }
 
 
-# ==========================================
+
 # G10: ARTICULATION POINTS & BRIDGES (Tarjan)
-# ==========================================
 def find_articulation_points_and_bridges(graph: Graph) -> Tuple[List[str], List[Tuple[str, str]], Dict]:
     """
     Finds critical counters (articulation points) and critical corridors (bridges) whose
@@ -528,18 +495,18 @@ def find_articulation_points_and_bridges(graph: Graph) -> Tuple[List[str], List[
             if v == parent:
                 continue
             if v in disc:
-                low[u] = min(low[u], disc[v])          # back edge
+                low[u] = min(low[u], disc[v])          
             else:
                 children += 1
                 dfs(v, u)
                 low[u] = min(low[u], low[v])
                 if low[v] > disc[u]:
-                    bridges.append((u, v))             # no back edge above u
+                    bridges.append((u, v))             
                 if parent is not None and low[v] >= disc[u]:
                     articulation.add(u)
 
         if parent is None and children > 1:
-            articulation.add(u)                        # DFS root with 2+ subtrees
+            articulation.add(u)                       
 
     for vertex_id in graph.vertices:
         if vertex_id not in disc:
