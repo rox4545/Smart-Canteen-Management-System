@@ -1,8 +1,3 @@
-"""
-Supporting Data Structures & Algorithms for Canteen Management System.
-Implements custom Queue, MinHeap Priority Queue, Hash Table, Inventory,
-Interval Table Scheduler, Timeout Deadline Queue, and Demand Tracker.
-"""
 
 import time
 from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
@@ -11,9 +6,9 @@ K = TypeVar('K')
 V = TypeVar('V')
 
 
-# ==========================================
+
 # 1. CUSTOM HASH TABLE (Problem S1, S2, S4)
-# ==========================================
+
 class HashNode(Generic[K, V]):
     def __init__(self, key: K, value: V):
         self.key: K = key
@@ -92,9 +87,8 @@ class HashTable(Generic[K, V]):
         return all_values
 
 
-# ==========================================
+
 # 2. CUSTOM FIFO QUEUE (Problem S1, S3)
-# ==========================================
 class QueueNode(Generic[V]):
     def __init__(self, value: V):
         self.value: V = value
@@ -144,9 +138,9 @@ class FIFOQueue(Generic[V]):
         return res
 
 
-# ==========================================
+
 # 3. CUSTOM MIN-HEAP PRIORITY QUEUE (Problem S1, S4, S5)
-# ==========================================
+
 class PriorityQueueEntry(Generic[V]):
     def __init__(self, priority: float, data: V):
         self.priority: float = priority  # Lower number = Higher priority
@@ -217,9 +211,8 @@ class PriorityQueue(Generic[V]):
         return [(e.priority, e.data) for e in sorted(self.heap)]
 
 
-# ==========================================
+
 # 4. INVENTORY MANAGEMENT (Problem S2)
-# ==========================================
 class FoodItem:
     def __init__(self, item_id: str, name: str, price: float, initial_quantity: int, counter_id: str):
         self.id: str = item_id
@@ -268,13 +261,10 @@ class InventoryManager:
         return True, f"Item '{food.name}' is available."
 
     def process_order_inventory(self, item_ids: List[str]) -> Tuple[bool, str]:
-        # Validate all first
         for item_id in item_ids:
             avail, msg = self.check_availability(item_id)
             if not avail:
                 return False, msg
-
-        # Decrement stock
         for item_id in item_ids:
             food = self.get_item(item_id)
             if food:
@@ -286,16 +276,16 @@ class InventoryManager:
         return self.items.values()
 
 
-# ==========================================
+
 # 5. TABLE MANAGEMENT & INTERVAL SCHEDULING (Problem S3)
-# ==========================================
+
 class DiningTable:
     def __init__(self, table_id: str, capacity: int = 4):
         self.id: str = table_id
         self.capacity: int = capacity
         self.is_occupied: bool = False
         self.current_token: Optional[str] = None
-        self.occupied_until: float = 0.0  # Timestamp or minutes offset
+        self.occupied_until: float = 0.0  
 
 class TableScheduler:
     """Manages table allocations and waiting queue using Interval Scheduling + Queue."""
@@ -306,7 +296,7 @@ class TableScheduler:
         self.waiting_queue: FIFOQueue[Dict[str, Any]] = FIFOQueue()
 
     def allocate_table(self, token: str, duration_mins: float = 15.0, current_time: float = 0.0) -> Tuple[bool, str]:
-        # Auto release expired tables
+        
         self.update_tables(current_time)
 
         for table_id, table in self.tables.items():
@@ -316,7 +306,6 @@ class TableScheduler:
                 table.occupied_until = current_time + duration_mins
                 return True, f"Table {table_id} allocated for Token {token} until T+{table.occupied_until} mins."
 
-        # No table free, enqueue student
         self.waiting_queue.enqueue({"token": token, "duration": duration_mins, "request_time": current_time})
         return False, f"All tables occupied. Token {token} added to table waiting queue (Position: {self.waiting_queue.size()})."
 
@@ -327,7 +316,6 @@ class TableScheduler:
             self.tables[table_id].current_token = None
             self.tables[table_id].occupied_until = 0.0
 
-            # Assign to next waiting student
             msg = f"Table {table_id} freed from Token {freed_token}."
             if not self.waiting_queue.is_empty():
                 next_waiter = self.waiting_queue.dequeue()
@@ -343,10 +331,8 @@ class TableScheduler:
             if t.is_occupied and current_time >= t.occupied_until:
                 self.release_table(t.id, current_time)
 
-
-# ==========================================
 # 6. UNCOLLECTED READY-ORDER TIMEOUT SCHEDULER (Problem S4)
-# ==========================================
+
 class ReadyOrder:
     def __init__(self, token: str, student_name: str, items: List[str], ready_time: float, deadline_time: float):
         self.token: str = token
@@ -354,13 +340,13 @@ class ReadyOrder:
         self.items: List[str] = items
         self.ready_time: float = ready_time
         self.deadline_time: float = deadline_time
-        self.status: str = "READY"  # READY, COLLECTED, EXPIRED
+        self.status: str = "READY"  
 
 class ReadyOrderTimeoutManager:
     """Manages order readiness deadlines using Priority Queue & Hash Table."""
     def __init__(self):
         self.ready_orders: HashTable[str, ReadyOrder] = HashTable()
-        self.deadline_pq: PriorityQueue[str] = PriorityQueue()  # Priority = deadline_time, Data = token
+        self.deadline_pq: PriorityQueue[str] = PriorityQueue()
 
     def add_ready_order(self, token: str, student_name: str, items: List[str], current_time: float, timeout_mins: float = 10.0) -> ReadyOrder:
         deadline = current_time + timeout_mins
@@ -396,9 +382,9 @@ class ReadyOrderTimeoutManager:
         return expired_list
 
 
-# ==========================================
+
 # 7. HIGH DEMAND FREQUENCY COUNTING & DYNAMIC PRIORITY SCHEDULING (Problem S5)
-# ==========================================
+
 class DemandTracker:
     """Tracks order frequency in time windows to dynamically adjust cooking priority."""
     def __init__(self):
